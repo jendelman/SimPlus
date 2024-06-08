@@ -2,22 +2,35 @@
 % Please edit documentation in R/sim_StageWise.R
 \name{sim_StageWise}
 \alias{sim_StageWise}
-\title{Estimate marker effects by StageWise within AlphaSimR}
+\title{Estimate marker effects by StageWise}
 \usage{
-sim_StageWise(pop, SP, geno.file)
+sim_StageWise(
+  geno.file,
+  pheno.file,
+  ploidy,
+  COMA.file,
+  gen.TP,
+  asreml.workspace = "500mb"
+)
 }
 \arguments{
-\item{pop}{training population, AlphaSimR Pop-class}
+\item{geno.file}{TP genotype CSV filename}
 
-\item{SP}{simulation parameters for AlphaSimR}
+\item{pheno.file}{TP phenotype CSV filename}
 
-\item{geno.file}{geno filename for COMA}
+\item{ploidy}{ploidy}
+
+\item{COMA.file}{input filename for COMA}
+
+\item{gen.TP}{number of generations for TP (including current)}
+
+\item{asreml.workspace}{memory workspace}
 }
 \value{
-nothing
+none
 }
 \description{
-Estimate marker effects by StageWise within AlphaSimR
+Estimate marker effects by StageWise
 }
 \details{
 Details

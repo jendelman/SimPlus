@@ -4,20 +4,24 @@
 \alias{sim_mate}
 \title{Perform mating in AlphaSimR}
 \usage{
-sim_mate(pop, SP, matings)
+sim_mate(pop, SP, matings, total.progeny, min.progeny)
 }
 \arguments{
 \item{pop}{parental candidates, AlphaSimR Pop-class}
 
 \item{SP}{simulation parameters for AlphaSimR}
 
-\item{matings}{data frame with columns parent1, parent2, n.progeny}
+\item{matings}{data frame of mate allocations, with columns parent1, parent2, value}
+
+\item{total.progeny}{total progeny to generate}
+
+\item{min.progeny}{minimum progeny per mating}
 }
 \value{
 list containing
 \describe{
 \item{progeny}{Pop-class of progeny}
-\item{matings}{matings input with additional column for mu}
+\item{matings}{matings with additional column for mu}
 }
 }
 \description{

@@ -4,17 +4,7 @@
 \alias{sim_OCS}
 \title{Parent selection and mating by OCS in AlphaSimR}
 \usage{
-sim_OCS(
-  pop,
-  SP,
-  n.progeny,
-  dF,
-  dF.max,
-  geno.file,
-  K.file,
-  min.c = 0.001,
-  solver = "ECOS"
-)
+sim_OCS(pop, SP, n.progeny, dF, dF.max, COMA.file, K.file, solver = "ECOS")
 }
 \arguments{
 \item{pop}{parental candidates, AlphaSimR Pop-class}
@@ -27,25 +17,24 @@ sim_OCS(
 
 \item{dF.max}{maximum inbreeding rate}
 
-\item{geno.file}{geno filename for COMA}
+\item{COMA.file}{marker effect or pheno filename for COMA}
 
 \item{K.file}{kinship filename for COMA}
-
-\item{min.c}{minimum contribution}
 
 \item{solver}{CVXR solver}
 }
 \value{
 list containing
 \describe{
-\item{parents}{Pop-class of selected parents}
-\item{ocs}{solution from ocs}
-\item{matings}{data frame for sim_mate}
+\item{response}{named vector with realized dF, merit, Shannon diversity}
+\item{oc}{data frame of optimal contributions for each individual}
+\item{om}{data frame of optimal allocations for each mating}
 }
 }
 \description{
 Parent selection and mating by OCS in AlphaSimR
 }
 \details{
-Details
+Auto detects whether COMA.file has marker effects or phenotype data based on 
+the first column name.
 }

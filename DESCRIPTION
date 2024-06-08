@@ -1,6 +1,6 @@
 Package: SimPlus
 Title: Functions to enhance AlphaSimR
-Version: 0.01
+Version: 0.02
 Author: Jeffrey B. Endelman
 Maintainer: Jeffrey Endelman <endelman@wisc.edu>
 Description: Functions to enhance AlphaSimR
@@ -9,6 +9,6 @@ License: GPL-3
 LazyData: true
 RoxygenNote: 7.2.3
 Encoding: UTF-8
-Imports:  utils, AlphaSimR
-Suggests: knitr, rmarkdown, StageWise, COMA
+Imports:  utils, AlphaSimR, dplyr, polyBreedR, pedigree, data.table, COMA
+Suggests: knitr, rmarkdown, StageWise
 VignetteBuilder: knitr

@@ -10,10 +10,9 @@ sim_OMA(
   n.progeny,
   dF,
   dF.max,
-  geno.file,
+  COMA.file,
   K.file,
   max.parent,
-  min.a = 0.001,
   solver = "ECOS"
 )
 }
@@ -28,23 +27,20 @@ sim_OMA(
 
 \item{dF.max}{maximum inbreeding rate}
 
-\item{geno.file}{geno filename for COMA}
+\item{COMA.file}{geno filename for COMA}
 
 \item{K.file}{kinship filename for COMA}
 
 \item{max.parent}{maximum number of candidate parents for oma}
-
-\item{min.a}{minimum mate allocation}
 
 \item{solver}{CVXR solver}
 }
 \value{
 list containing
 \describe{
-\item{parents}{Pop-class of selected parents}
-\item{oma}{solution from oma}
-\item{matings}{data frame for sim_mate}
-\item{dev}{mean absolute deviation from random mating}
+\item{response}{named vector with realized dF, merit, Shannon diversity}
+\item{oc}{data frame of optimal contributions for each individual}
+\item{om}{data frame of optimal allocations for each mating}
 }
 }
 \description{
