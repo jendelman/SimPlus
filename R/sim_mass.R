@@ -32,7 +32,7 @@ sim_mass <- function(dF, sel.method, total.progeny, min.progeny,
                      COMA.file=params$pheno.file, 
                      K.file=params$K.file,
                      solver=params$solver)
-    acc <- list(ocs=as.numeric(NA), oma=as.numeric(NA))
+    acc <- as.numeric(NA)
   } else {
     ans1 <- sim_StageWise(params$geno.file,
                           params$pheno.file,
@@ -40,7 +40,12 @@ sim_mass <- function(dF, sel.method, total.progeny, min.progeny,
                           params$COMA.file,
                           params$gen.record,
                           params$asreml.workspace)
-    acc <- sim_accuracy(pop, SP, params$COMA.file, params$K.file)
+    tmp <- sim_accuracy(pop, SP, params$COMA.file, params$K.file)
+    if (K.method=="OCS") {
+      acc <- tmp$acc.ocs
+    } else {
+      acc <- tmp$acc.oma
+    }
   
     if (sel.method=="OCS") {
       ans2 <- sim_OCS(pop, SP, n.progeny=total.progeny, dF=dF, dF.max=0.1, 
@@ -73,6 +78,5 @@ sim_mass <- function(dF, sel.method, total.progeny, min.progeny,
   
   return(list(pop=pop,SP=SP,
           stats=list(n.parent=ans3$n.parent, n.mate=nrow(ans3$matings),
-                     acc.ocs=acc$ocs, acc.oma=acc$oma,
-                     F.A=ans4$F.A, F.G=ans4$F.G)))
+                     acc=acc,F.A=ans4$F.A, F.G=ans4$F.G)))
 }

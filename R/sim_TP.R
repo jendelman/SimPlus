@@ -60,7 +60,6 @@ sim_TP <- function(pop, SP, geno.file, pheno.file, ped.file, K.file, K.method,
     geno <- as.matrix(fread(geno.file, sep=",", header = T, drop=1))
     geno2 <- cbind(geno,new.geno)[,pheno$id]
     rownames(geno2) <- rownames(new.geno)
-    p.ref <- NULL
   } else {
     p.ref <- apply(new.geno,1,mean)/pop@ploidy
     geno2 <- new.geno

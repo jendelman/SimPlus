@@ -37,10 +37,6 @@ sim_mate <- function(pop, SP, matings, total.progeny, min.progeny) {
   m <- nrow(matings)
   selected <- union(matings$parent1,matings$parent2)
   n.parent <- length(selected)
-#  parent.pop <- selectInd(setPheno(pop,varE=0,simParam = SP), 
-#                          nInd=length(selected), 
-#                          candidates=match(selected,pop@id),
-#                          simParam = SP)
   
   crossPlan <- cbind(match(matings$parent1, pop@id),
                      match(matings$parent2, pop@id))
