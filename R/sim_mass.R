@@ -80,5 +80,5 @@ sim_mass <- function(dF, sel.method, total.progeny, min.progeny,
   
   return(list(pop=pop,SP=SP,
           stats=list(n.parent=ans3$n.parent, n.mate=nrow(ans3$matings),
-                     dF=COMA.dF, F.A=ans4$F.A, F.G=ans4$F.G, accuracy=acc)))
+                     F.A=ans4$F.A, F.G=ans4$F.G, accuracy=acc, dF=COMA.dF)))
 }
