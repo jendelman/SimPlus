@@ -16,7 +16,7 @@
 #' \describe{
 #' \item{pop}{Pop-class of progeny}
 #' \item{SP}{simulation parameters}
-#' \item{stats}{list with n.parent, F.A, F.G}
+#' \item{stats}{list with n.parent, dF, F.A, F.G, accuracy}
 #' }
 #'
 #' @import AlphaSimR
@@ -52,6 +52,7 @@ sim_mass <- function(dF, sel.method, total.progeny, min.progeny,
                        COMA.file=params$COMA.file, 
                        K.file=params$K.file,
                        solver=params$solver)
+      COMA.dF <- ans2$response$dF
     }
     if (sel.method=="OMA") {
       ans2 <- sim_OMA(pop, SP, n.progeny=total.progeny, dF=dF, dF.max=0.1, 
@@ -59,6 +60,7 @@ sim_mass <- function(dF, sel.method, total.progeny, min.progeny,
                       K.file=params$K.file,
                       max.parent=params$max.parent,
                       solver=params$solver)
+      COMA.dF <- ans2$response$dF2
     }
   }
 
@@ -78,5 +80,5 @@ sim_mass <- function(dF, sel.method, total.progeny, min.progeny,
   
   return(list(pop=pop,SP=SP,
           stats=list(n.parent=ans3$n.parent, n.mate=nrow(ans3$matings),
-                     acc=acc,F.A=ans4$F.A, F.G=ans4$F.G)))
+                     dF=COMA.dF, F.A=ans4$F.A, F.G=ans4$F.G, accuracy=acc)))
 }
