@@ -73,7 +73,7 @@ sim_TP <- function(pop, SP, geno.file, pheno.file, ped.file, K.file, K.method,
     A <- G_mat(new.geno, pop@ploidy, p.ref=p.ref, method="VR1")
     F.G <- (mean(diag(A))-1)/(pop@ploidy-1)
   } 
-  if (K.method=="G.LA") {
+  if (K.method=="G.IBD") {
     marks <- unlist(lapply(SP$genMap,function(map){
       u <- split(names(map),cut(map,breaks=ibd.loci))
       sapply(u,"[[",1)
