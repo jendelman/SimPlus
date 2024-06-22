@@ -26,7 +26,7 @@ list containing
 \describe{
 \item{pop}{Pop-class of progeny}
 \item{SP}{simulation parameters}
-\item{stats}{list with n.parent, F.A, F.G}
+\item{stats}{list with n.parent, dF, F.A, F.G, accuracy}
 }
 }
 \description{
