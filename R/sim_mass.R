@@ -16,7 +16,7 @@
 #' \describe{
 #' \item{pop}{Pop-class of progeny}
 #' \item{SP}{simulation parameters}
-#' \item{stats}{list with n.parent, dF, F.A, F.G, accuracy}
+#' \item{stats}{data.frame with n.parent, dF, F.A, F.G, accuracy}
 #' }
 #'
 #' @import AlphaSimR
@@ -79,6 +79,6 @@ sim_mass <- function(dF, sel.method, total.progeny, min.progeny,
                    params$n.core)
   
   return(list(pop=pop,SP=SP,
-          stats=list(n.parent=ans3$n.parent, n.mate=nrow(ans3$matings),
+          stats=data.frame(n.parent=ans3$n.parent, n.mate=nrow(ans3$matings),
                      F.A=ans4$F.A, F.G=ans4$F.G, accuracy=acc, dF=COMA.dF)))
 }
