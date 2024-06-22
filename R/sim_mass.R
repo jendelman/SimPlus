@@ -42,9 +42,9 @@ sim_mass <- function(dF, sel.method, total.progeny, min.progeny,
                           params$asreml.workspace)
     tmp <- sim_accuracy(pop, SP, params$COMA.file, params$K.file)
     if (K.method=="OCS") {
-      acc <- tmp$acc.ocs
+      acc <- tmp$ocs
     } else {
-      acc <- tmp$acc.oma
+      acc <- tmp$oma
     }
   
     if (sel.method=="OCS") {
