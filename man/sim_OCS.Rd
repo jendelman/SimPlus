@@ -4,7 +4,7 @@
 \alias{sim_OCS}
 \title{Parent selection and mating by OCS in AlphaSimR}
 \usage{
-sim_OCS(pop, SP, n.progeny, dF, dF.max, COMA.file, K.file, solver = "ECOS")
+sim_OCS(pop, SP, n.progeny, dF, COMA.file, K.file, solver = "ECOS")
 }
 \arguments{
 \item{pop}{parental candidates, AlphaSimR Pop-class}
@@ -14,8 +14,6 @@ sim_OCS(pop, SP, n.progeny, dF, dF.max, COMA.file, K.file, solver = "ECOS")
 \item{n.progeny}{number of progeny to simulate}
 
 \item{dF}{target inbreeding rate}
-
-\item{dF.max}{maximum inbreeding rate}
 
 \item{COMA.file}{marker effect or pheno filename for COMA}
 

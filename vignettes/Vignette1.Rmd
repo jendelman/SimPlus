@@ -1,0 +1,173 @@
+---
+title: "SimPlus Vignette"
+author: "Jeff Endelman"
+date: "2024-06-23"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(knitr)
+opts_chunk$set(echo = TRUE,message=FALSE,warning=FALSE,comment="##",
+                      dpi=150)
+opts_knit$set(root.dir="~/Software/SimPlus/vignettes/")
+```
+
+SimPlus was created to facilitate testing [COMA](https://github.com/jendelman/COMA) using [AlphaSimR](https://cran.r-project.org/web/packages/AlphaSimR/index.html).
+
+The following code creates a founder population in mutation-drift equilibrium and sets the variance parameters for a trait with additive and dominance effects. 
+
+```{r}
+founders <- runMacs2(nInd=500,nChr=10,segSites=NULL,Ne=100,
+                     mutRate=1e-8, ploidy=2,
+                     histGen=NULL,histNe=NULL,genLen=1)
+SP <- SimParam$new(founders)
+SP$setTrackRec(TRUE)
+SP$addTraitADG(nQtlPerChr = 100, mean = 0, var = 1, varDD = 0.5, 
+               meanDD = 0.5, useVarA = FALSE)
+SP$setVarE(varE=2)
+pop <- newPop(founders, simParam=SP)
+```
+
+The following code runs 20 generations of mass selection at 1% inbreeding, using phenotypes for genetic merit. The population is saved after 5 generations to compare the response with genomic selection. 
+
+```{r}
+gp <- genParam(pop, simParam = SP)
+total.gen <- 20
+results <- data.frame(gen=1:total.gen, mu=numeric(total.gen), 
+                      genicVar=numeric(total.gen), 
+                      F.A=numeric(total.gen), n.parent=numeric(total.gen), 
+                      n.mate=numeric(total.gen),
+                      accuracy=numeric(total.gen))  
+results$mu[1] <- as.numeric(gp$mu)
+results$genicVar[1] <- as.numeric(gp$genicVarG) 
+
+p.ref <- update_TP(pop, SP, geno.file="geno.csv.gz", 
+                   pheno.file="pheno.csv", ped.file="ped.csv", 
+                   gen.TP=0)
+update_K(pop, SP, K.method="A", K.file="kinship.csv", ped.file="ped.csv")
+
+for (gen in 1:total.gen) {
+  print(sub("X",gen,"Generation X"))
+  ans1 <- sim_OCS(pop, SP, n.progeny=500, dF=0.01, solver="MOSEK",
+                  COMA.file="pheno.csv", K.file="kinship.csv")
+  
+  #optional, measure accuracy
+  acc <- sim_accuracy(pop, SP, COMA.file="pheno.csv")
+  results.GEBV$accuracy[gen] <- acc$ocs
+  
+  ans2 <- sim_mate(pop, SP, matings=ans1$om, total.progeny=500, min.progeny=5)
+  results$n.parent[gen] <- ans2$n.parent
+  results$n.mate[gen] <- nrow(ans2$matings)
+  
+  pop <- setPheno(ans2$progeny,simParam = SP) #AlphaSimR function
+  gp <- genParam(pop, simParam = SP)
+  results$mu[gen] <- as.numeric(gp$mu)
+  results$genicVar[gen] <- as.numeric(gp$genicVarG) 
+  
+  update_TP(pop, SP, geno.file="geno.csv.gz", pheno.file="pheno.csv", 
+            ped.file="ped.csv", gen.TP=3)
+  results$F.A[gen] <- update_K(pop, SP, K.method="A", K.file="kinship.csv", 
+                               ped.file="ped.csv")
+  if (gen==5)
+    sim_save("gen5.rda",pop,SP,"geno.csv.gz","pheno.csv","ped.csv",p.ref=p.ref)
+}
+
+kable(results,digits=3)
+```
+
+Even though there is no genomic selection in the above simulation, the function `update_TP` is still required to update the phenotype and pedigree files for OCS. The argument `gen.TP` controls the number of generations in the TP (including the candidates, which are selected after phenotyping). It is set at 3 to anticipate the simulation below, ensuring the full TP is available at the onset of GS in generation 5.
+
+To simulate GS requires another function, sim_StageWise, to predict the marker effects using the [StageWise](https://github.com/jendelman/StageWise) package.
+
+```{r}
+gen5 <- sim_load("gen5.rda","geno.csv.gz","pheno.csv","ped.csv")
+pop <- gen5$pop
+SP <- gen5$SP
+results.GEBV <- results
+
+update_K(pop, SP, K.method="A", K.file="kinship.csv", ped.file="ped.csv")
+
+for (gen in 6:total.gen) {
+  print(sub("X",gen,"Generation X"))
+  ans0 <- sim_StageWise("geno.csv.gz","pheno.csv",ploidy=2,
+                        COMA.file="COMA.csv", gen.TP=3)
+  
+  ans1 <- sim_OCS(pop, SP, n.progeny=500, dF=0.01, solver="MOSEK",
+                  COMA.file="COMA.csv", K.file="kinship.csv")
+  
+  acc <- sim_accuracy(pop, SP, COMA.file="COMA.csv", K.file="kinship.csv")
+  results.GEBV$accuracy[gen] <- acc$ocs
+  
+  ans2 <- sim_mate(pop, SP, matings=ans1$om, total.progeny=500, min.progeny=5)
+  results.GEBV$n.parent[gen] <- ans2$n.parent
+  results.GEBV$n.mate[gen] <- nrow(ans2$matings)
+  
+  pop <- setPheno(ans2$progeny,simParam = SP) 
+  gp <- genParam(pop, simParam = SP)
+  results.GEBV$mu[gen] <- as.numeric(gp$mu)
+  results.GEBV$genicVar[gen] <- as.numeric(gp$genicVarG) 
+  
+  update_TP(pop, SP, geno.file="geno.csv.gz", pheno.file="pheno.csv",
+            ped.file="ped.csv", gen.TP=3)
+  results.GEBV$F.A[gen] <- update_K(pop, SP, K.method="A", K.file="kinship.csv", 
+                               ped.file="ped.csv")
+}
+```
+
+Simulating OMA follows the same code as above but replaces `sim_OCS` with `sim_OMA`, which has an additional argument `max.parent`. To limit the size of the computational problem for OMA, OCS is first used to reduce the number of candidates to `max.parent`. 
+
+```{r}
+gen5 <- sim_load("gen5.rda","geno.csv.gz","pheno.csv","ped.csv")
+pop <- gen5$pop
+SP <- gen5$SP
+results.OMA <- results
+
+update_K(pop, SP, K.method="A", K.file="kinship.csv", ped.file="ped.csv")
+
+for (gen in 6:total.gen) {
+  print(sub("X",gen,"Generation X"))
+  ans0 <- sim_StageWise("geno.csv.gz","pheno.csv",ploidy=2,
+                        COMA.file="COMA.csv", gen.TP=3)
+  
+  ans1 <- sim_OMA(pop, SP, n.progeny=500, dF=0.01, solver="MOSEK",
+                  COMA.file="COMA.csv", K.file="kinship.csv",
+                  max.parent=200)
+  
+  acc <- sim_accuracy(pop, SP, COMA.file="COMA.csv", K.file="kinship.csv")
+  results.OMA$accuracy[gen] <- acc$oma
+  
+  ans2 <- sim_mate(pop, SP, matings=ans1$om, total.progeny=500, min.progeny=5)
+  results.OMA$n.parent[gen] <- ans2$n.parent
+  results.OMA$n.mate[gen] <- nrow(ans2$matings)
+  
+  pop <- setPheno(ans2$progeny,simParam = SP) 
+  gp <- genParam(pop, simParam = SP)
+  results.OMA$mu[gen] <- as.numeric(gp$mu)
+  results.OMA$genicVar[gen] <- as.numeric(gp$genicVarG) 
+  
+  update_TP(pop, SP, geno.file="geno.csv.gz", pheno.file="pheno.csv",
+            ped.file="ped.csv", gen.TP=3)
+  results.OMA$F.A[gen] <- update_K(pop, SP, K.method="A", K.file="kinship.csv", 
+                               ped.file="ped.csv")
+}
+
+pdat <- rbind(data.frame(results, method="OCS-P"),
+              data.frame(results.GEBV, method="OCS-GEBV"),
+              data.frame(results.OMA, method="OMA"))
+```
+
+```{r,echo=F}
+pdat <- system.file("vignette_data", "results.csv", package = "SimPlus")
+```
+
+```{r}
+library(ggplot2)
+library(ggpubr)
+p1 <- ggplot(pdat,aes(x=gen,y=mu,colour=method)) + geom_line()
+p2 <- ggplot(pdat,aes(x=gen,y=genicVar,colour=method)) + geom_line()
+p3 <- ggplot(pdat,aes(x=gen,y=F.A,colour=method)) + geom_line()
+p4 <- ggplot(pdat,aes(x=gen,y=accuracy,colour=method)) + geom_line()
+
+ggarrange(p1,p2,p3,p4,nrow=2,ncol=2,common.legend=T)
+```
+

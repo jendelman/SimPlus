@@ -1,14 +1,11 @@
 #' Parent selection and mating by OMA in AlphaSimR
 #'
 #' Parent selection and mating by OMA in AlphaSimR
-#'
-#' Details
 #' 
 #' @param pop parental candidates, AlphaSimR Pop-class
 #' @param SP simulation parameters for AlphaSimR
 #' @param n.progeny number of progeny to simulate
 #' @param dF target inbreeding rate
-#' @param dF.max maximum inbreeding rate
 #' @param COMA.file geno filename for COMA
 #' @param K.file kinship filename for COMA
 #' @param max.parent maximum number of candidate parents for oma
@@ -25,7 +22,7 @@
 #' @import COMA
 #' @export
 
-sim_OMA <- function(pop, SP, n.progeny, dF, dF.max, COMA.file, K.file, 
+sim_OMA <- function(pop, SP, n.progeny, dF, COMA.file, K.file, 
                     max.parent, solver="ECOS") {
 
   stopifnot(inherits(pop,"Pop"))
@@ -37,7 +34,7 @@ sim_OMA <- function(pop, SP, n.progeny, dF, dF.max, COMA.file, K.file,
                     ploidy=ploidy,matings="none",standardize=T)
   ans2 <- COMA::ocs(parents=data.frame(ans1$parents,min=0,max=1/max.parent),
               ploidy=ploidy,K=ans1$K,dF=dF,
-              dF.adapt=list(step=0.005,max=dF.max),
+              dF.adapt=list(step=0.005,max=0.1),
               solver=solver)
   if (nrow(ans2$oc)==0) {
     stop("No solution possible.")
@@ -52,7 +49,7 @@ sim_OMA <- function(pop, SP, n.progeny, dF, dF.max, COMA.file, K.file,
   ans3 <- COMA::oma(parents=data.frame(id=sel1,min=0,max=1),
               matings=data.frame(ans1$matings,min=0,max=1),
               ploidy=ploidy,K=ans1$K,dF=dF,
-              dF.adapt=list(step=0.005,max=dF.max),
+              dF.adapt=list(step=0.005,max=0.1),
               solver=solver)
   if (nrow(ans3$om)==0) {
     stop("No solution possible.")

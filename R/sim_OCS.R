@@ -9,7 +9,6 @@
 #' @param SP simulation parameters for AlphaSimR
 #' @param n.progeny number of progeny to simulate
 #' @param dF target inbreeding rate
-#' @param dF.max maximum inbreeding rate
 #' @param COMA.file marker effect or pheno filename for COMA
 #' @param K.file kinship filename for COMA
 #' @param solver CVXR solver
@@ -23,9 +22,10 @@
 #'
 #' @import AlphaSimR
 #' @import COMA
+#' @importFrom data.table fread
 #' @export
 
-sim_OCS <- function(pop, SP, n.progeny, dF, dF.max, COMA.file, K.file, 
+sim_OCS <- function(pop, SP, n.progeny, dF, COMA.file, K.file, 
                     solver="ECOS") {
 
   stopifnot(inherits(pop,"Pop"))
@@ -48,7 +48,7 @@ sim_OCS <- function(pop, SP, n.progeny, dF, dF.max, COMA.file, K.file,
   
   ans2 <- COMA::ocs(parents=data.frame(ans1$parents,min=0,max=1),
               ploidy=ploidy,K=ans1$K,dF=dF,
-              dF.adapt=list(step=0.005,max=dF.max),
+              dF.adapt=list(step=0.005,max=0.1),
               solver=solver)
   if (nrow(ans2$oc)==0) {
     stop("No solution possible.")

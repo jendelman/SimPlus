@@ -4,17 +4,7 @@
 \alias{sim_OMA}
 \title{Parent selection and mating by OMA in AlphaSimR}
 \usage{
-sim_OMA(
-  pop,
-  SP,
-  n.progeny,
-  dF,
-  dF.max,
-  COMA.file,
-  K.file,
-  max.parent,
-  solver = "ECOS"
-)
+sim_OMA(pop, SP, n.progeny, dF, COMA.file, K.file, max.parent, solver = "ECOS")
 }
 \arguments{
 \item{pop}{parental candidates, AlphaSimR Pop-class}
@@ -24,8 +14,6 @@ sim_OMA(
 \item{n.progeny}{number of progeny to simulate}
 
 \item{dF}{target inbreeding rate}
-
-\item{dF.max}{maximum inbreeding rate}
 
 \item{COMA.file}{geno filename for COMA}
 
@@ -45,7 +33,4 @@ list containing
 }
 \description{
 Parent selection and mating by OMA in AlphaSimR
-}
-\details{
-Details
 }

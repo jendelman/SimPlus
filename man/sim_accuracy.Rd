@@ -4,27 +4,24 @@
 \alias{sim_accuracy}
 \title{Estimate selection accuracy}
 \usage{
-sim_accuracy(pop, SP, COMA.file, K.file, n.mate = 100, n.progeny = 50)
+sim_accuracy(pop, SP, COMA.file, K.file = NULL, n.mate = 100, n.progeny = 50)
 }
 \arguments{
 \item{pop}{parental candidates, AlphaSimR Pop-class}
 
 \item{SP}{simulation parameters for AlphaSimR}
 
+\item{COMA.file}{COMA filename}
+
 \item{K.file}{kinship filename for COMA}
 
 \item{n.mate}{number of matings to sample}
 
 \item{n.progeny}{number of progeny per mating}
-
-\item{geno.file}{geno filename for COMA}
 }
 \value{
 list of accuracies for OCS and OMA
 }
 \description{
 Estimate selection accuracy
-}
-\details{
-Details
 }
