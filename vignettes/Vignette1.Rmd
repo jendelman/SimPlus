@@ -12,11 +12,11 @@ opts_chunk$set(echo = TRUE,message=FALSE,warning=FALSE,comment="##",
 opts_knit$set(root.dir="~/Software/SimPlus/vignettes/")
 ```
 
-SimPlus was created to facilitate testing [COMA](https://github.com/jendelman/COMA) using [AlphaSimR](https://cran.r-project.org/web/packages/AlphaSimR/index.html).
+SimPlus was created for testing [COMA](https://github.com/jendelman/COMA) using [AlphaSimR](https://cran.r-project.org/web/packages/AlphaSimR/index.html). COMA provides functions for optimum contribution selection (OCS) and optimum mate allocation (OMA). For OCS, the objective is to maximize the average GEBV of the parents, weighted by their contributions. For OMA, the objective is to maximize the average GPMP (genomic prediction of mate performance), weighted by the mate allocations. 
 
 The following code creates a founder population in mutation-drift equilibrium and sets the variance parameters for a trait with additive and dominance effects. 
 
-```{r}
+```{r,eval=F}
 founders <- runMacs2(nInd=500,nChr=10,segSites=NULL,Ne=100,
                      mutRate=1e-8, ploidy=2,
                      histGen=NULL,histNe=NULL,genLen=1)
@@ -30,7 +30,7 @@ pop <- newPop(founders, simParam=SP)
 
 The following code runs 20 generations of mass selection at 1% inbreeding, using phenotypes for genetic merit. The population is saved after 5 generations to compare the response with genomic selection. 
 
-```{r}
+```{r,eval=F}
 gp <- genParam(pop, simParam = SP)
 total.gen <- 20
 results <- data.frame(gen=1:total.gen, mu=numeric(total.gen), 
@@ -71,15 +71,13 @@ for (gen in 1:total.gen) {
   if (gen==5)
     sim_save("gen5.rda",pop,SP,"geno.csv.gz","pheno.csv","ped.csv",p.ref=p.ref)
 }
-
-kable(results,digits=3)
 ```
 
 Even though there is no genomic selection in the above simulation, the function `update_TP` is still required to update the phenotype and pedigree files for OCS. The argument `gen.TP` controls the number of generations in the TP (including the candidates, which are selected after phenotyping). It is set at 3 to anticipate the simulation below, ensuring the full TP is available at the onset of GS in generation 5.
 
-To simulate GS requires another function, sim_StageWise, to predict the marker effects using the [StageWise](https://github.com/jendelman/StageWise) package.
+To simulate GS requires another function, `sim_StageWise`, to predict the marker effects using the [StageWise](https://github.com/jendelman/StageWise) package.
 
-```{r}
+```{r,eval=F}
 gen5 <- sim_load("gen5.rda","geno.csv.gz","pheno.csv","ped.csv")
 pop <- gen5$pop
 SP <- gen5$SP
@@ -116,7 +114,7 @@ for (gen in 6:total.gen) {
 
 Simulating OMA follows the same code as above but replaces `sim_OCS` with `sim_OMA`, which has an additional argument `max.parent`. To limit the size of the computational problem for OMA, OCS is first used to reduce the number of candidates to `max.parent`. 
 
-```{r}
+```{r,eval=F}
 gen5 <- sim_load("gen5.rda","geno.csv.gz","pheno.csv","ped.csv")
 pop <- gen5$pop
 SP <- gen5$SP
@@ -153,21 +151,35 @@ for (gen in 6:total.gen) {
 
 pdat <- rbind(data.frame(results, method="OCS-P"),
               data.frame(results.GEBV, method="OCS-GEBV"),
-              data.frame(results.OMA, method="OMA"))
+              data.frame(results.OMA, method="OMA-GPMP"))
 ```
 
 ```{r,echo=F}
-pdat <- system.file("vignette_data", "results.csv", package = "SimPlus")
+filename <- system.file("vignette_data", "vignette.csv", package = "SimPlus")
+pdat <- read.csv(filename)
+pdat$method <- factor(pdat$method,ordered=T,
+                      levels=c("OMA-GPMP","OCS-GEBV","OCS-P"))
 ```
+
+We can now plot the results.
 
 ```{r}
 library(ggplot2)
 library(ggpubr)
-p1 <- ggplot(pdat,aes(x=gen,y=mu,colour=method)) + geom_line()
-p2 <- ggplot(pdat,aes(x=gen,y=genicVar,colour=method)) + geom_line()
-p3 <- ggplot(pdat,aes(x=gen,y=F.A,colour=method)) + geom_line()
-p4 <- ggplot(pdat,aes(x=gen,y=accuracy,colour=method)) + geom_line()
+p1 <- ggplot(pdat,aes(x=gen,y=mu,colour=method)) + geom_line() +
+  ylab("Genetic Gain") + xlab("Generation") + 
+  scale_colour_brewer(palette="Set1")
+p2 <- ggplot(pdat,aes(x=gen,y=genicVar,colour=method)) + geom_line() +
+  ylab("Genic Variance") + xlab("Generation") +
+  scale_colour_brewer(palette="Set1")
+p3 <- ggplot(pdat,aes(x=gen,y=accuracy,colour=method)) + geom_line() +
+  ylab("Selection Accuracy") + xlab("Generation") +
+  scale_colour_brewer(palette="Set1")
+p4 <- ggplot(pdat,aes(x=gen,y=n.mate,colour=method)) + geom_line() +
+  ylab("# Matings") + xlab("Generation") +
+  scale_colour_brewer(palette="Set1")
 
 ggarrange(p1,p2,p3,p4,nrow=2,ncol=2,common.legend=T)
 ```
 
+At 1% inbreeding, OCS-GEBV and OMA-GPMP achieved similar gain by 20 generations, but OMA was more efficient because less genic variance was depleted. The higher accuracy observed for OMA is because GPMP includes the specific combining ability (SCA) of each mating, while OCS only includes GCA. The number of matings required by OMA was much lower than OCS, which was at the imposed limit of 100.
