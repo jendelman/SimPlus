@@ -16,7 +16,8 @@ SimPlus was created for testing [COMA](https://github.com/jendelman/COMA) with [
 
 The following code creates a founder population in mutation-drift equilibrium and sets the variance parameters for a trait with additive and dominance effects. 
 
-```{r}
+```{r,eval=F}
+library(AlphaSimR)
 founders <- runMacs2(nInd=500,nChr=10,segSites=NULL,Ne=100,
                      mutRate=1e-8, ploidy=2,
                      histGen=NULL,histNe=NULL,genLen=1)
@@ -28,9 +29,12 @@ SP$setVarE(varE=2)
 pop <- newPop(founders, simParam=SP)
 ```
 
+### OCS-A-Pheno
+
 The following code runs 20 generations of mass selection at 1% inbreeding, using phenotypes for genetic merit. The population is saved after 5 generations to compare the response with genomic selection. 
 
-```{r}
+```{r,eval=F}
+library(SimPlus)
 gp <- genParam(pop, simParam = SP)
 total.gen <- 20
 results <- data.frame(gen=1:total.gen, mu=numeric(total.gen), 
@@ -73,19 +77,22 @@ for (gen in 1:total.gen) {
     sim_save("gen5.rda",pop,SP,"geno.csv.gz","pheno.csv","ped.csv",p.ref=p.ref)
 }
 
-all.results <- data.frame(results,sim="OCS-A-Pheno")
+all.results <- data.frame(results,method="OCS-A-Pheno")
 ```
 
 Even though there is no genomic selection in the above simulation, the function `update_TP` is still required to update the phenotype and pedigree files for OCS. The argument `gen.TP` controls the number of generations in the TP (including the candidates, which are selected after phenotyping). It is set at 3 to anticipate the simulation below, ensuring the full TP is available at the onset of GS in generation 5.
 
+### OCS-A-GEBV
+
 To simulate GS requires another function, `sim_StageWise`, to predict the marker effects using the [StageWise](https://github.com/jendelman/StageWise) package. The file with the predicted marker effects (COMA.file) is now used as input for `sim_OCS` instead of the phenotype file.
 
-```{r}
+```{r,eval=F}
 gen5 <- sim_load("gen5.rda","geno.csv.gz","pheno.csv","ped.csv")
 pop <- gen5$pop
 SP <- gen5$SP
 
-update_K(pop, SP, K.method="A", K.file="kinship.csv", ped.file="ped.csv")
+results$F.coeff[5] <- update_K(pop, SP, K.method="A", 
+                           K.file="kinship.csv", ped.file="ped.csv")
 
 for (gen in 6:total.gen) {
   print(sub("X",gen,"Generation X"))
@@ -113,18 +120,21 @@ for (gen in 6:total.gen) {
                                ped.file="ped.csv")
 }
 
-results.all <- rbind(results, data.frame(results, sim="OCS-A-GEBV"))
+results.all <- rbind(results, data.frame(results[5:20,], method="OCS-A-GEBV"))
 ```
+
+### OCS-G.IBD-GEBV
 
 Instead of pedigree kinship, genomic IBD (G.IBD) kinship can be used to control inbreeding. To reduce computational time, not all segregating sites are needed for this calculation. The parameter "ibd.loci" in the function `update_K` controls how many loci per chromosome to use. The default is 100, and since the chromosomes are 100 cM, this implies 1 marker per cM. 
 
-```{r}
+```{r,eval=F}
 gen5 <- sim_load("gen5.rda","geno.csv.gz","pheno.csv","ped.csv")
 pop <- gen5$pop
 SP <- gen5$SP
 
-update_K(pop, SP, K.method="G.IBD", K.file="kinship.csv", 
-         ped.file="ped.csv", ibd.loci=100, n.core=2)
+results$F.coeff[5] <- update_K(pop, SP, K.method="G.IBD", 
+                               K.file="kinship.csv", 
+                               ped.file="ped.csv", ibd.loci=100, n.core=2)
 
 for (gen in 6:total.gen) {
   print(sub("X",gen,"Generation X"))
@@ -153,19 +163,21 @@ for (gen in 6:total.gen) {
                                    ibd.loci=100, n.core=2)
 }
 
-results.all <- rbind(results, data.frame(results, sim="OCS-G.IBD-GEBV"))
+results.all <- rbind(results, data.frame(results[5:20,], method="OCS-G.IBD-GEBV"))
 ```
+
+### OCS-G.VR-GEBV
 
 A genomic kinship matrix based on VanRaden (2008) Method 1 can also be tested for inbreeding control, using the founder allele frequencies (p.ref) as the base population.
 
-```{r}
+```{r,eval=F}
 gen5 <- sim_load("gen5.rda","geno.csv.gz","pheno.csv","ped.csv")
 pop <- gen5$pop
 SP <- gen5$SP
 p.ref <- gen5$p.ref
 
-update_K(pop, SP, K.method="G.VR", K.file="kinship.csv", 
-         ped.file="ped.csv", p.ref=p.ref)
+results$F.coeff[5] <- update_K(pop, SP, K.method="G.VR", K.file="kinship.csv", 
+                               ped.file="ped.csv", p.ref=p.ref)
 
 for (gen in 6:total.gen) {
   print(sub("X",gen,"Generation X"))
@@ -194,18 +206,20 @@ for (gen in 6:total.gen) {
                                    p.ref=p.ref)
 }
 
-results.all <- rbind(results, data.frame(results, sim="OCS-G.VR-GEBV"))
+results.all <- rbind(results, data.frame(results[5:20,], method="OCS-G.VR-GEBV"))
 ```
+
+### OMA-A-GPMP
 
 Simulating OMA follows the same code as above but replaces `sim_OCS` with `sim_OMA`, which has an additional argument `max.parent`. To limit the size of the computational problem for OMA, OCS is first used to reduce the number of candidates to `max.parent`. 
 
-```{r}
+```{r,eval=F}
 gen5 <- sim_load("gen5.rda","geno.csv.gz","pheno.csv","ped.csv")
 pop <- gen5$pop
 SP <- gen5$SP
 
-update_K(pop, SP, K.method="A", K.file="kinship.csv", 
-         ped.file="ped.csv")
+results$F.coeff[5] <- update_K(pop, SP, K.method="A", 
+                               K.file="kinship.csv", ped.file="ped.csv")
 
 for (gen in 6:total.gen) {
   print(sub("X",gen,"Generation X"))
@@ -234,32 +248,63 @@ for (gen in 6:total.gen) {
                                    K.file="kinship.csv", ped.file="ped.csv")
 }
 
-results.all <- rbind(results, data.frame(results, sim="OMA-A-GPMP"))
+results.all <- rbind(results, data.frame(results[5:20,], method="OMA-A-GPMP"))
 ```
 
 ```{r,echo=F}
-write.csv(results.all,"vigette_all.csv")
+filename <- system.file("vignette_data", "vignette.csv", package = "SimPlus")
+results.all <- read.csv(filename)
+```
+
+
+The average inbreeding rate at time $t$ follows 
+
+$$ \Delta F_t = 1-\left( \frac{1-F_t}{1-F_0} \right)^{1/t}$$
+
+```{r}
+library(dplyr)
+results.all$dF <- NA*numeric(nrow(results.all))
+
+fdF <- function(gen,Ft,F0) {1-((1-Ft)/(1-F0))^(1/gen)}
+
+results0 <- filter(results.all,gen==5)
+methods <- unique(results0$method)
+m <- length(methods)
+
+for (i in 1:m) {
+  ix <- which(results.all$method==methods[i] & results.all$gen > 5)
+  results.all$dF[ix] <- fdF(gen=1:15, 
+                            Ft=results.all$F.coeff[ix],
+                            F0=results0$F.coeff[results0$method==methods[i]])
+}
 ```
 
 We can now plot the results.
 
-```{r}
+```{r,fig.height=6,fig.width=6}
 library(ggplot2)
 library(ggpubr)
+
 p1 <- ggplot(results.all,aes(x=gen,y=mu,colour=method)) + geom_line() +
   ylab("Genetic Gain") + xlab("Generation") + 
-  scale_colour_brewer(palette="Set1")
+  scale_colour_brewer(name="",palette="Set1")
 p2 <- ggplot(results.all,aes(x=gen,y=genicVar,colour=method)) + geom_line() +
   ylab("Genic Variance") + xlab("Generation") +
-  scale_colour_brewer(palette="Set1")
-p3 <- ggplot(results.all,aes(x=gen,y=accuracy,colour=method)) + geom_line() +
+  scale_colour_brewer(name="",palette="Set1")
+p3 <- ggplot(results.all,aes(x=gen,y=dF,colour=method)) + geom_line() +
+  ylab("Inbreeding Rate") + xlab("Generation") +
+  scale_colour_brewer(name="",palette="Set1")
+p4 <- ggplot(results.all,aes(x=gen,y=accuracy,colour=method)) + geom_line() +
   ylab("Selection Accuracy") + xlab("Generation") +
-  scale_colour_brewer(palette="Set1")
-p4 <- ggplot(results.all,aes(x=gen,y=n.mate,colour=method)) + geom_line() +
+  scale_colour_brewer(name="",palette="Set1")
+p5 <- ggplot(results.all,aes(x=gen,y=n.parent,colour=method)) + geom_line() +
+  ylab("# Parents") + xlab("Generation") +
+  scale_colour_brewer(name="",palette="Set1")
+p6 <- ggplot(results.all,aes(x=gen,y=n.mate,colour=method)) + geom_line() +
   ylab("# Matings") + xlab("Generation") +
-  scale_colour_brewer(palette="Set1")
+  scale_colour_brewer(name="",palette="Set1")
 
-ggarrange(p1,p2,p3,p4,nrow=2,ncol=2,common.legend=T)
+ggarrange(p1,p2,p3,p4,p5,p6,nrow=3,ncol=2,common.legend=T,legend = "right")
 ```
 
-At 1% inbreeding, OCS-GEBV and OMA-GPMP achieved similar gain by 20 generations, but OMA was more efficient because less genic variance was depleted. The higher accuracy observed for OMA is because GPMP includes the specific combining ability (SCA) of each mating, while OCS only includes GCA. The number of matings required by OMA was much lower than OCS, which was at the imposed limit of 100.
+This short simulation illustrates some key points, which are discussed in greater depth in the publication. Compared to OCS, OMA has higher accuracy for predicting F1 progeny means, sparser mating designs, and generally more efficient at converting genic variance into genetic gain. Using G.VR for kinship does not properly control the inbreeding rate.
