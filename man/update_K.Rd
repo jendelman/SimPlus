@@ -11,7 +11,7 @@ update_K(
   K.file,
   ped.file = NULL,
   p.ref = NULL,
-  ibd.loci = NULL,
+  ibd.loci = 100,
   n.core = 1
 )
 }
@@ -20,13 +20,13 @@ update_K(
 
 \item{SP}{simulation parameters for AlphaSimR}
 
-\item{K.method}{kinship method: A, G.VR1, G.IBD}
+\item{K.method}{kinship method: A, G.VR, G.IBD}
 
 \item{K.file}{kinship CSV filename}
 
 \item{ped.file}{pedigree CSV filename}
 
-\item{p.ref}{reference pop allele frequencies for "VR1" method}
+\item{p.ref}{reference pop allele frequencies for "VR" method}
 
 \item{ibd.loci}{number of loci per chromosome for "G.IBD" method}
 
@@ -39,5 +39,5 @@ average inbreeding coefficient of the population
 Update kinship file
 }
 \details{
-Kinship is computed for selection candidates in \code{pop}. For \code{K.method}="A", argument \code{ped.file} is the three-column pedigree file. For \code{K.method}="G.VR1", argument \code{p.ref} is the vector of reference allele frequencies. To reduce computing time for \code{K.method}="G.IBD", only \code{ibd.loci} are sampled per chromosome.
+Kinship is computed for selection candidates in \code{pop}. For \code{K.method}="A", argument \code{ped.file} is the three-column pedigree file. For \code{K.method}="G.VR", argument \code{p.ref} is the vector of reference allele frequencies. To reduce computing time for \code{K.method}="G.IBD", only \code{ibd.loci} are sampled per chromosome.
 }
