@@ -27,7 +27,7 @@ sim_StageWise(
 \item{asreml.workspace}{memory workspace}
 }
 \value{
-none
+list of dominance parameters
 }
 \description{
 Estimate marker effects by StageWise

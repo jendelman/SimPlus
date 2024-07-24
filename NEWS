@@ -1,2 +1,5 @@
+Changes in 0.05
+* sim_StageWise returns dominance params
+
 Changes in 0.04
 * Updates for Vignette 1

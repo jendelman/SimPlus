@@ -11,7 +11,7 @@
 #' @param gen.TP number of generations for TP (including current)
 #' @param asreml.workspace memory workspace
 #' 
-#' @return none
+#' @return list of dominance parameters
 #'
 #' @export
 #' @importFrom data.table fread
@@ -46,6 +46,7 @@ sim_StageWise <- function(geno.file, pheno.file, ploidy, COMA.file,
   write.csv(cbind(marker.effects,
                   geno[marker.effects$marker,pheno$id]),
             file=COMA.file,row.names=F)
-  #return(StageWise::dominance(a2$params))
-  return(NULL)
+
+  x <- StageWise::dominance(a2$params)
+  return(list(Vd=x$estimate[1],b=x$estimate[2]))
 }

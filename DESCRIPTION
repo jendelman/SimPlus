@@ -1,6 +1,6 @@
 Package: SimPlus
 Title: Functions to enhance AlphaSimR
-Version: 0.04
+Version: 0.05
 Author: Jeffrey B. Endelman
 Maintainer: Jeffrey Endelman <endelman@wisc.edu>
 Description: Functions to enhance AlphaSimR
