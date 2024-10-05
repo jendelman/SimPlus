@@ -1,3 +1,7 @@
+Changes in 0.06
+* sim_OMA modified to match new dF specification in COMA v0.19, with lower and upper bounds.
+* updated vignette
+
 Changes in 0.05
 * sim_StageWise returns dominance params
 

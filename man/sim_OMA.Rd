@@ -34,3 +34,8 @@ list containing
 \description{
 Parent selection and mating by OMA in AlphaSimR
 }
+\details{
+Argument \code{dF} is a numeric vector of length 2, for lower and upper bounds on inbreeding rate.
+
+Parent pre-selection is done with \code{ocs} to satisfy the \code{max.parent} limit for \code{oma}.
+}

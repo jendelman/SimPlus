@@ -2,6 +2,10 @@
 #'
 #' Parent selection and mating by OMA in AlphaSimR
 #' 
+#' Argument \code{dF} is a numeric vector of length 2, for lower and upper bounds on inbreeding rate.
+#' 
+#' Parent pre-selection is done with \code{ocs} to satisfy the \code{max.parent} limit for \code{oma}.
+#' 
 #' @param pop parental candidates, AlphaSimR Pop-class
 #' @param SP simulation parameters for AlphaSimR
 #' @param n.progeny number of progeny to simulate
@@ -28,12 +32,15 @@ sim_OMA <- function(pop, SP, n.progeny, dF, COMA.file, K.file,
   stopifnot(inherits(pop,"Pop"))
   stopifnot(requireNamespace("COMA"))
   ploidy <- pop@ploidy
+  
+  stopifnot(length(dF)==2L)
+  stopifnot(dF[1]<=dF[2])
 
   ans1 <- COMA::read_data(geno.file=COMA.file,
                     kinship.file=K.file,
                     ploidy=ploidy,matings="none",standardize=T)
   ans2 <- COMA::ocs(parents=data.frame(ans1$parents,min=0,max=1/max.parent),
-              ploidy=ploidy,K=ans1$K,dF=dF,
+              ploidy=ploidy,K=ans1$K,dF=dF[2],
               dF.adapt=list(step=0.005,max=0.1),
               solver=solver)
   if (nrow(ans2$oc)==0) {
